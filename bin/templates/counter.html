@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
+	
+<head>
+	<title>Test counter</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"></link>
+  	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  	
+  	<script type="text/javascript"  src="http://localhost:8080/js/workerController.js"></script>
+</head>
+<body>
+<button id="get">getPackage</button><br/>
+Package Info :<span id="packageInfo"></span><br/>
+<button id="cancel">cancelPackage</button><br/>
+<button id="return">returnPackage</button><br/>
+File path: <input id="path" type="text"></input><br/>
+<button id="pathBtm">check file</button><br/>
+<button id="addTask">add mock task</button><br/>
+<div id ="counter"></div>
+
+
+</body>
+<script>
+var pack;
+
+/*<![CDATA[*/
+var task =[];
+for (i = 0; i < 100; i++) {
+    x= Math.floor((Math.random() * 10) + 1);
+    y= Math.floor((Math.random() * 10) + 1);
+    task[i]={"x":x,"y":y};
+}
+$(document).ready(function(){
+    $('#get').click(function(){
+    	$.get("http://localhost:8080/wdc/getPackage", function(data){
+    		pack = data;
+    		dat = JSON.parse(pack.data);
+    		$('#packageInfo').text(pack.id);
+    	})
+    })
+    $('#cancel').click(function(){
+    	$.ajax({
+	   		  type: "POST",
+	   		  url: "http://localhost:8080/wdc/cancelPackage",
+	   		  data: JSON.stringify(pack),
+	   		  dateType: "json",
+	   	      contentType: "application/json",
+	   		  success: function(){
+	   			  $('#packageInfo').text("canceled " +pack.id);
+	   		  }
+    				
+   		});
+    })
+    $('#return').click(function(){
+    	$.ajax({
+    		  type: "POST",
+    		  url: "http://localhost:8080/wdc/returnPackage",
+    		  data: JSON.stringify(pack),
+	   		  dateType: "json",
+	   	      contentType: "application/json",
+    		  success: function(){
+    			  $('#packageInfo').text("returned " +pack.id);
+    		  },
+    		  dateType: "JSON"  
+   		});
+    })
+    $('#pathBtm').click(function(){
+    	var path = $('#path').val();
+    	$.get("http://localhost:8080/wdc/fileExists?path="+path, function(){
+    		;
+    	})
+    })
+    $('#addTask').click(function(){
+    	var task = {inputDataPath: "test.txt",
+    				distributableDataPath: "test.txt",
+    				scriptPath: "test.txt",
+    				scriptFunction: "zxc"}
+    	$.ajax({
+    		  type: "POST",
+    		  url: "http://localhost:8080/wdc/addTask",
+    		  data: JSON.stringify(task),
+	   		  dateType: "json",
+	   	      contentType: "application/json",    		  
+    		  dateType: "JSON"  
+   		});
+    })
+});
+var ctrl;
+$(document).ready(function(){
+        ctrl= new WorkerController("counter",false, "http://localhost:8080");
+});
+
+</script>
+</html>
