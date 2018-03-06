@@ -2,11 +2,11 @@
  * 
  */
 class WorkerController{
-    constructor(displayId,autoStart, hostPath){
+    constructor(displayId,autoStart){
         if (typeof(Worker) !== "undefined") {  // sprawdzenie wspieralności webworker
             this.threads = navigator.hardwareConcurrency; // ilość wątków
             this.displayId = displayId; // id elementu wyświetlającego
-            this.workerJs = 'js/worker2.js';
+            this.workerJs = '/js/worker2.js';
             //this.workerJs = 'js/worker1.js';
             this.workers = [];
             this.queue =[];
@@ -14,7 +14,6 @@ class WorkerController{
             this.inputDataBusy=0;
             this.assigments =[];
             this.inputData=[];
-            this.hostPath = hostPath;
             for (let i=0; i<this.threads; i++){
                 this.workers.push(new Worker(this.workerJs));
                 $('#'+this.displayId).append(
@@ -55,6 +54,9 @@ class WorkerController{
             $('#'+this.displayId).on('click','#allKill', function(){
                 ctrl.killWorkerAll();
             })
+            $(window).on('unload', function(){
+            	ctrl.killWorkerAll();
+            });
             if(autoStart){
                 this.startWorkerAll();
             }
@@ -119,58 +121,46 @@ class WorkerController{
     }
     getTask(){
         if(this.queue.length>0){
+        	this.getTaskBusy=1;
 			var id = ctrl.queue.pop();
 			$.ajax({
 		   		  type: "GET",
-		   		  url: ctrl.hostPath + "/wdc/getPackage",
+		   		  url: "/wdc/getPackage",
 		   		  success: function(data){	 
 		   			//ctrl.assigments[id] = data['id'];
 		   			ctrl.assigments[id] = data;
-                    ctrl.workers[id].postMessage({'cmd': 'getPackage', 'msg': data});
                     ctrl.toggleCog(id);
+                    ctrl.workers[id].postMessage({'cmd': 'getPackage', 'msg': data});
+                    console.log("send to task "+data.id);
                     if (ctrl.queue.length !==0)
                     {
                         ctrl.getTask();
-                    }
-		   		  }	    				
+                    }                    
+		   		  },	 
+		   		  error: function(){
+		   			ctrl.queue.push(id);
+		   			setTimeout(function(){ctrl.getTask()}, 10000);
+		   		  }
 	   		});
-            /*$.get(ctrl.hostPath + "/wdc/getPackage", function(data, status){
-                var json = JSON.parse(data);                
-                if(json['idPaczka']==-1 || json['idPaczka'] == 'null' ){
-                    setTimeout(function(){ctrl.getTask()}, 10000);
-                }
-                else{
-                    ctrl.assigments[id] = json['idPaczka'];
-                    ctrl.workers[id].postMessage({'cmd': 'getPackage', 'msg': data});
-                    ctrl.toggleCog(id);
-                    if (ctrl.queue.length !==0)
-                    {
-                        ctrl.getTask();
-                    }
-                }
-            });*/
         }
     }
     cancelTask(id){
     	$.ajax({
 	   		  type: "POST",
-	   		  url: "http://localhost:8080/wdc/cancelPackage",
+	   		  url: "/wdc/cancelPackage",
 	   		  data: JSON.stringify(ctrl.assigment[id]),
 	   		  dateType: "json",
 	   	      contentType: "application/json"  				
- 		});
-        /*$(document).ready(function(){
-            $.post("db1.php/?fn=anuluj&id="+ctrl.assigments[id], function(){});
-        });*/
+ 		});        
         this.assigments[id]=null;
     }
-    enqueueInputData(id,taskId,path){
+    enqueueInputData(id,taskId){
         if(this.inputData[taskId]=== undefined) {
             if (this.inputDataBusy === 0) {
-                this.queueInputData.push({'id': id, 'taskId': taskId, 'path': path});
+                this.queueInputData.push({'id': id, 'taskId': taskId});
                 this.getInputData();
             } else {
-                this.queueInputData.push({'id': id, 'taskId': taskId, 'path': path});
+                this.queueInputData.push({'id': id, 'taskId': taskId});
             }
         }else{
             this.sendInputData(id,taskId);
@@ -180,16 +170,20 @@ class WorkerController{
         this.inputDataBusy=1;
         let obj = this.queueInputData.pop();
         if(this.inputData[obj.taskId]===undefined){
-            $.get(obj.path, function(data){
-                data = JSON.parse(data);
-                ctrl.inputData[obj.taskId]=data;
-                ctrl.sendInputData(obj.id,obj.taskId);
-                if (ctrl.queueInputData.length!==0){
+        	$.ajax({
+  	   		  type: "GET",
+  	   		  url: "/wdc/getInputData?id="+obj.taskId,
+  	   		  success: function(data){
+  	   			  data = JSON.parse(data);
+  	   			  ctrl.inputData[obj.taskId]=data;
+  	   			  ctrl.sendInputData(obj.id,obj.taskId);
+  	   			  if (ctrl.queueInputData.length!==0){
                     ctrl.getInputData();
-                }else{
+  	   			  }else{
                     this.inputDataBusy=0;
-                }
-            });
+  	   			  }
+  	   		  }
+        	});        	
         }
         else {
             this.sendInputData(obj.id,obj.taskId);
@@ -213,9 +207,10 @@ class WorkerController{
         $('#packageCounter').html(counter+1);
     }
     returnPack(pack){
+    	console.log("return id "+pack.id);
     	$.ajax({
   		  type: "POST",
-  		  url: "http://localhost:8080/wdc/returnPackage",
+  		  url: "/wdc/returnPackage",
   		  data: JSON.stringify(pack),
 	   		  dateType: "json",
 	   	      contentType: "application/json"  		 
@@ -238,7 +233,7 @@ class WorkerController{
                 });*/
                 break;
             case 'getInputData':
-                this.enqueueInputData(e.id,e.data.taskId, e.data.path);
+                this.enqueueInputData(e.id,e.taskId);
                 break;
             default:
                 console.log(e.id + e.msg);

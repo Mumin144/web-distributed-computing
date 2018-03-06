@@ -39,10 +39,10 @@ public class Task {
 	private Integer packagesTotal;	
 	
 	@Column(name = "start_time")
-	private String startTime;	
+	private Long startTime;	
 	
 	@Column(name = "stop_time")
-	private String stopTime;
+	private Long stopTime;
 	
 	
 
@@ -102,19 +102,19 @@ public class Task {
 		this.packagesTotal = packagesTotal;
 	}
 
-	public String getStartTime() {
+	public Long getStartTime() {
 		return startTime;
 	}
 
-	public void setStartTime(String startTime) {
+	public void setStartTime(Long startTime) {
 		this.startTime = startTime;
 	}
 
-	public String getStopTime() {
+	public Long getStopTime() {
 		return stopTime;
 	}
 
-	public void setStopTime(String stopTime) {
+	public void setStopTime(Long stopTime) {
 		this.stopTime = stopTime;
 	}
 }

@@ -1,6 +1,7 @@
 package wdc.repository;
 
 
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,5 +13,6 @@ import wdc.model.Task;
 public interface TaskRepository extends JpaRepository<Task, Integer> {
 
 	Task findById (Integer id);
+	List<Task> findAll();
 	Set<Task> findByStatus(Integer status);
 }

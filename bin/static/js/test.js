@@ -2,7 +2,7 @@
  * 
  */
 function zxc(packData){
- 	data = packData[0];
+ 	var data = packData[0];
  	if (data.x > data.y){
  		packData[3]="x";
  	}else{
@@ -12,8 +12,9 @@ function zxc(packData){
  	 		packData[3]="xy";
  	 	}
  	}
- 	data = JSON.stringify(packData);
-	returnData(data);
+ 	var response = {"q": data, "a":packData[3]};
+ 	//data = JSON.stringify(response);
+	returnData(response);
 	if (stopWorker==0){
 		getNewData();
     }

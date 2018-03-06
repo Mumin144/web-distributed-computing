@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Tasks</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+</head>
+
+<body>
+	<div th:replace="fragments/commonImports :: commonImports"></div>
+	<div th:replace="fragments/menu :: menu">...</div>
+	
+	<div class="container p-2">
+		<div class="col-5 btn btn-dark " data-toggle="collapse" href="#taskAdd">Show task form</div>
+		<div class="col-5 btn btn-dark pull-right" data-toggle="collapse" href="#matrixAdd">Show matrix form</div>
+	</div>
+	
+	<div class="collapse" id="taskAdd">
+		<div class="container p-2">
+			<form id="taskForm">
+				<div class="form-group">
+					<label>inputDataPath</label>
+					<input type="text" class="form-control " pattern="(\w+).(\w+)" id="inputDataPath" placeholder="Enter inputDataPath"/> 
+				</div>
+				<div class="form-group">
+					<label>distributableDataPath</label>
+					<input type="text" class="form-control" id="distributableDataPath" placeholder="Enter distributableDataPath"/> 
+				</div>
+				<div class="form-group">
+					<label>scriptPath</label>
+					<input type="text" class="form-control" id="scriptPath" placeholder="Enter scriptPath"/> 
+				</div>
+				<div class="form-group">
+					<label>scriptFunction</label>
+					<input type="text" class="form-control" id="scriptFunction" placeholder="Enter scriptFunction"/> 
+				</div>
+				<div class="row p-3">
+					<div id="addTask" class="btn btn-primary">Add Task</div>
+					<div id="errors" class="text-danger font-weight-bold p-2 "></div>
+				</div>
+			</form>		
+		</div>
+	</div>
+	
+	<div class="collapse" id="matrixAdd">
+		<div class="container p-2">
+			<form id="matrixForm">			
+				<div class="form-group">
+					<label>size</label>
+					<input type="number" class="form-control" id="size" placeholder="Enter size" min="2" max="5000"/> 
+				</div>
+				<div class="form-group">
+					<label>nrOfPacks</label>
+					<input type="number" class="form-control" id="nrOfPacks" placeholder="Enter number of packs" min="1" max="10000"/> 
+				</div>
+				<div class="form-group">
+					<label>range</label>
+					<input type="number" class="form-control" id="range" placeholder="Enter range" min="1" max="1000"/> 
+				</div>
+				<div class="row p-3">
+					<div id="addMatrix" class="btn btn-primary">Add matrix task</div>
+					<div id="errorsMatrix" class="text-danger font-weight-bold p-2 "></div>				
+				</div>			
+			</form>		
+		</div>
+	</div>
+	
+	
+	<div class="container p-2">
+		<ul class="list-group" id="taskList">
+			<li class="list-group-item list-group-item-dark" th:each="task : ${tasks}">
+				<div class="row">
+					<div class="col-2 h3 font-weight-bold" th:text="${task.id}"></div>
+					<div class="col-7">
+						<div th:if="${task.status} == 0" class="btn btn-dark w-100">divide task</div>
+						<div th:if="${task.status} == 1" class="progress h-100">
+							<div class="progress-bar" role="progressbar" 
+							th:attr="aria-valuenow=${done.get(__${task.id}__)}, 
+									aria-valuemax= ${task.packagesTotal}"
+							aria-valuemin="0" 
+							th:style="'width: ' + ${percent.get(__${task.id}__)} + '%;'">
+							</div>
+							<div class="font-weight-bold h3" th:text="${done.get(__${task.id}__)}+' / '+${task.packagesTotal}"></div>
+						</div>
+						<div th:if="${task.status} == 2" class="btn btn-info w-100">complete - collecting</div>
+						<div th:if="${task.status} == 3" class="btn btn-success w-100">get results</div>
+					</div>
+					<div class="col-3 btn btn-dark " data-toggle="collapse" th:href="'#info' + ${task.id}">info</div>
+				</div>
+				<div class="collapse" th:id="'info' + ${task.id}">
+					<ul class="list-group collapse" >
+						<li class="row">
+							<div class="col-4">inputDataPath:</div>
+							<div class="col-7 text-right" th:text="${task.inputDataPath}"></div>
+						</li>
+						<li class="row">
+							<div class="col-5">distributableDataPath:</div>
+							<div class="col-7 text-right" th:text="${task.distributableDataPath}"></div>
+						</li>
+						<li class="row">
+							<div class="col-5">scriptPath:</div>
+							<div class="col-7 text-right" th:text="${task.scriptPath}"></div>
+						</li>
+						<li class="row">
+							<div class="col-5">scriptFunction:</div>
+							<div class="col-7 text-right" th:text="${task.scriptFunction}"></div>
+						</li>
+						<li class="row">
+							<div class="col-5">status:</div>
+							<div class="col-7 text-right" th:text="${task.status}"></div>
+						</li>
+						<li class="row" th:if="${task.status} > 0">
+							<div class="col-5">packagesTotal:</div>
+							<div class="col-7 text-right" th:text="${task.packagesTotal}"></div>
+						</li>
+						<li class="row">
+							<div class="col-5">distributableDataPath:</div>
+							<div class="col-7 text-right" th:text="${task.distributableDataPath}"></div>
+						</li>
+						<li class="row" th:if="${task.status} == 1">
+							<div class="col-5">startTime:</div>
+							<div class="col-7 text-right" th:text="${task.startTime}"></div>
+						</li>
+						<li class="row" th:if="${task.status} == 2">
+							<div class="col-5">stopTime:</div>
+							<div class="col-7 text-right" th:text="${task.stopTime}"></div>
+						</li>									
+					</ul>
+				</div>								
+							
+				
+			</li>
+		
+		</ul>
+	</div>
+</body>
+<footer>
+<script th:inline="javascript">
+/*<![CDATA[*/
+$(document).ready(function(){
+	let list= $("#taskList");
+	$(list).find(">li > .row div:nth-child(2)").on("click",function(){
+		let status = $(this).parents().eq(1).find("div:nth-child(2) >ul > li:nth-child(5) >div:nth-child(2) ").text();
+		let id = $(this).parent().find(">div:first-child").text(); 
+		switch(status){
+			case "0":
+				$.get( "/wdc/divideTask?id="+id, function(){
+					location.reload();
+					});
+				break;
+			case "0":
+				location.reload()
+				break;
+				
+			case "3":
+				window.location="/wdc/getDoneFile?id="+id
+				break;
+		}
+	})
+})	
+	
+$(document).ready(function(){
+	$("#addMatrix").on("click", function(){
+		let task = {"size":null, "nrOfPacks":null, "range":null};
+		task["size"]=$("#size").val();
+		task["nrOfPacks"]=$("#nrOfPacks").val();
+		task["range"]=$("#range").val();
+		if( !task["size"] || !task["nrOfPacks"] || !task["range"]){
+			$("#errorsMatrix").text("fill all inputs");
+		}else{
+			$("#errorsMatrix").text("");
+			$("#matrixForm :input").removeClass("is-invalid");
+			$.ajax({
+		  			type: "POST",
+		  			url: "/wdc/addRandomMatrix",
+		  			data: JSON.stringify(task),
+			   		dateType: "json",
+			   	    contentType: "application/json",
+		   	    success: function(){
+	 	    		location.reload();
+		   	    },
+   	      		error: function(data){
+   	      			let err = JSON.parse(data.responseText);
+	   	      		for(i=0 ; i< err.length ; i++){
+	    				$("#"+err[i]).addClass("is-invalid");
+	 	    		}
+   	      		}
+			});
+		}	
+	});
+});
+
+$(document).ready(function(){
+	$("#addTask").on("click", function(){
+		var task = {"inputDataPath":null, "distributableDataPath":null, "scriptPath":null, "scriptFunction":null};
+		task["inputDataPath"]=$("#inputDataPath").val();
+		task["distributableDataPath"]=$("#distributableDataPath").val();
+		task["scriptPath"]=$("#scriptPath").val();
+		task["scriptFunction"]=$("#scriptFunction").val();
+		if( !task["inputDataPath"] || !task["distributableDataPath"] 
+			|| !task["scriptPath"] || !task["scriptFunction"]){
+			$("#errors").text("fill all inputs");
+		}else{
+			$("#errors").text("");
+			$("#taskForm :input").removeClass("is-invalid");
+			$.ajax({
+		  		  type: "POST",
+		  		  url: "/wdc/addTask",
+		  		  data: JSON.stringify(task),
+			   		  dateType: "json",
+			   	      contentType: "application/json",
+		   	      success: function(){
+	 	    		  location.reload()
+		   	      },
+	 	    	  error: function(data){
+	 	    		let err = data.responseJSON;
+	 	    		for(i=0 ; i< err.length ; i++){
+ 	    				$("#"+err[i]).addClass("is-invalid");
+	 	    		}
+		   	      } 
+			});
+		}		
+	});
+});
+
+
+/*]]>*/
+</script>
+</footer>
+</html>

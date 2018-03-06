@@ -11,17 +11,19 @@ var inputData = {'id':-1,'data':null};
 function getNewData(){
 	postMessage({'id': workerId, 'msg': "getPackage"});
 }
-function returnData(dat){
-	task.data=JSON.stringify(dat)
+function returnData(dat){	
+	task.data=dat;
 	postMessage({'id': workerId, 'msg': "returnData", 'data': task});
+	task="";
+	taskData="";
 }
 function checkStart(){
 	//returnData(json);
 	/*if (script == json['skrypt']&& inputData['id']==json['idZadanie'] ){				
 				return eval(json['zadanie'])(json, inputData['data']);	//możliwe bez użycia eval(niezbyt bezpieczne)
 	}*/
-	if (script == taskData[1] ){				
-		return eval(taskData[2])(taskData);	//możliwe bez użycia eval(niezbyt bezpieczne)
+	if (script == taskData[1] &&  inputData.id==task['taskId']){				
+		return eval(taskData[2])(taskData[0] , inputData.data);	//możliwe bez użycia eval(niezbyt bezpieczne)
 	}
 	return null;
 }
@@ -42,9 +44,9 @@ self.addEventListener('message', function(e) {
 				script = taskData[1];				
 				importScripts(script);
 			}
-			/*if(inputData.id!=json['idZadanie']){
-				postMessage({'id':workerId, 'msg': "getInputData", 'data':{'taskId':json['idZadanie'],'path':json['sciezka_dane_wejsciowe']}});
-			}*/
+			if(inputData.id!=taskData['taskId']){
+				postMessage({'id':workerId, 'msg': "getInputData", 'taskId':task['taskId']});
+			}
 			checkStart();
 			break;
       	case 'getInputData':      		

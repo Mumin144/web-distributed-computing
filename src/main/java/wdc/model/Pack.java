@@ -28,7 +28,7 @@ public class Pack {
 	
 	
 	@Column(name = "time", nullable = true)//time in ms
-	private Integer time;
+	private Long time;
 	
 	@Column(name = "user_user_id")
 	private Integer userId;
@@ -72,11 +72,11 @@ public class Pack {
 		this.status = status;
 	}
 
-	public Integer getTime() {
+	public Long getTime() {
 		return time;
 	}
 
-	public void setTime(int time) {
+	public void setTime(Long time) {
 		this.time = time;
 	}
 
